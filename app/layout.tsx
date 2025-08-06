@@ -4,8 +4,8 @@ import { Inter } from 'next/font/google'
 import { useRouter, usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
-import Navbar from '@/components/Navbar'
-import Footer from '@/components/Footer'
+import Navbar from '../components/Navbar'
+import Footer from '../components/Footer'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
