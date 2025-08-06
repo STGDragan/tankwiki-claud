@@ -1,39 +1,15 @@
 'use client'
 
 import { useRouter, usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabaseClient'
 
-const publicPages = ['/', '/login', '/auth/callback']
+interface NavbarProps {
+  user: any
+  onLogout: () => void
+}
 
-export default function Navbar() {
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
+export default function Navbar({ user, onLogout }: NavbarProps) {
   const router = useRouter()
   const pathname = usePathname()
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      setUser(session?.user || null)
-      setLoading(false)
-    }
-    fetchUser()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push('/login')
-  }
-
-  const shouldShow = !publicPages.includes(pathname) && user && !loading
-  if (!shouldShow) return null
 
   return (
     <nav className="bg-gray-900 border-b border-gray-800 sticky top-0 z-50">
@@ -42,19 +18,36 @@ export default function Navbar() {
           <div className="flex items-center">
             <button
               onClick={() => router.push('/dashboard')}
-              className="text-2xl font-bold bg-gradient-to-r from-teal-400 to-orange-400 bg-clip-text text-transparent hover:opacity-80"
+              className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
             >
-              🐠 TankWiki
+              <div className="text-2xl font-bold bg-gradient-to-r from-teal-400 to-orange-400 bg-clip-text text-transparent">
+                🐠 TankWiki
+              </div>
             </button>
           </div>
-          <div className="hidden md:flex space-x-6">
-            <button onClick={() => router.push('/dashboard')} className="nav-link">Dashboard</button>
-            <button onClick={() => router.push('/aquariums')} className="nav-link">Aquariums</button>
-            <button onClick={() => router.push('/tanks')} className="nav-link">Tanks</button>
+
+          <div className="hidden md:flex items-center space-x-6">
+            {['/dashboard', '/aquariums', '/tanks'].map((path) => (
+              <button
+                key={path}
+                onClick={() => router.push(path)}
+                className={`text-gray-300 hover:text-teal-400 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  pathname === path || pathname.startsWith(path) ? 'text-teal-400 bg-gray-800' : ''
+                }`}
+              >
+                {path.replace('/', '').charAt(0).toUpperCase() + path.slice(2)}
+              </button>
+            ))}
           </div>
-          <div className="flex space-x-4 items-center">
-            <span className="text-gray-400 text-sm hidden md:block">{user?.email}</span>
-            <button onClick={handleLogout} className="bg-orange-600 hover:bg-green-400 hover:text-black text-white px-4 py-2 rounded-lg text-sm font-medium transition-all">
+
+          <div className="flex items-center space-x-4">
+            <span className="hidden md:block text-gray-400 text-sm">
+              {user?.email}
+            </span>
+            <button
+              onClick={onLogout}
+              className="bg-orange-600 hover:bg-green-400 hover:text-black text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 transform hover:scale-105"
+            >
               Logout
             </button>
           </div>
